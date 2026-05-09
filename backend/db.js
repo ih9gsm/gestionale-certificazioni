@@ -33,6 +33,11 @@ const db = new sqlite3.Database(dbPath, (err) => {
       tipo_intervento TEXT NOT NULL,
       descrizione_impianto TEXT NOT NULL,
       indirizzo_impianto TEXT NOT NULL,
+      allegato_progetto BOOLEAN DEFAULT 0,
+      allegato_relazione_materiali BOOLEAN DEFAULT 0,
+      allegato_schema_impianto BOOLEAN DEFAULT 0,
+      allegato_certificato_requisiti BOOLEAN DEFAULT 0,
+      relazione_materiali_testo TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (client_id) REFERENCES clients(id),
       FOREIGN KEY (installer_id) REFERENCES installers(id)

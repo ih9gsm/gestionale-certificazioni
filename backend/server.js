@@ -53,7 +53,7 @@ app.post('/api/installers', (req, res) => {
 
 app.get('/api/dicos', (req, res) => {
   const query = `
-    SELECT d.*, c.name as client_name, i.company_name as installer_company
+    SELECT d.*, c.name as client_name, i.company_name as installer_company, i.responsible_person as installer_resp
     FROM dicos d
     LEFT JOIN clients c ON d.client_id = c.id
     LEFT JOIN installers i ON d.installer_id = i.id
@@ -66,14 +66,27 @@ app.get('/api/dicos', (req, res) => {
 });
 
 app.post('/api/dicos', (req, res) => {
-  const { client_id, installer_id, tipo_intervento, descrizione_impianto, indirizzo_impianto } = req.body;
+  const {
+    client_id, installer_id, tipo_intervento, descrizione_impianto, indirizzo_impianto,
+    allegato_progetto, allegato_relazione_materiali, allegato_schema_impianto, allegato_certificato_requisiti, relazione_materiali_testo
+  } = req.body;
+
   if (!client_id || !installer_id || !tipo_intervento || !descrizione_impianto || !indirizzo_impianto) {
-    return res.status(400).json({ error: "All fields are required" });
+    return res.status(400).json({ error: "All mandatory fields are required" });
   }
 
-  db.run(`INSERT INTO dicos (client_id, installer_id, tipo_intervento, descrizione_impianto, indirizzo_impianto)
-          VALUES (?, ?, ?, ?, ?)`,
-    [client_id, installer_id, tipo_intervento, descrizione_impianto, indirizzo_impianto], function(err) {
+  db.run(`INSERT INTO dicos (
+            client_id, installer_id, tipo_intervento, descrizione_impianto, indirizzo_impianto,
+            allegato_progetto, allegato_relazione_materiali, allegato_schema_impianto, allegato_certificato_requisiti, relazione_materiali_testo
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      client_id, installer_id, tipo_intervento, descrizione_impianto, indirizzo_impianto,
+      allegato_progetto ? 1 : 0,
+      allegato_relazione_materiali ? 1 : 0,
+      allegato_schema_impianto ? 1 : 0,
+      allegato_certificato_requisiti ? 1 : 0,
+      relazione_materiali_testo || ''
+    ], function(err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ id: this.lastID, client_id, installer_id, tipo_intervento, descrizione_impianto, indirizzo_impianto });
   });

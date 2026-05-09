@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import DicoPdf from '../components/DicoPdf';
 
 export default function DicoList() {
   const [dicos, setDicos] = useState([]);
@@ -41,8 +43,17 @@ export default function DicoList() {
                     <p><strong>Indirizzo Impianto:</strong> {dico.indirizzo_impianto}</p>
                     <p className="text-sm text-gray-600 mt-1"><em>{dico.descrizione_impianto}</em></p>
                   </div>
-                  <div className="text-sm text-gray-500">
-                    {new Date(dico.created_at).toLocaleDateString()}
+                  <div className="flex flex-col items-end gap-2">
+                    <div className="text-sm text-gray-500">
+                      {new Date(dico.created_at).toLocaleDateString()}
+                    </div>
+                    <PDFDownloadLink
+                      document={<DicoPdf dico={dico} />}
+                      fileName={`DICO_${dico.id}_${dico.client_name.replace(' ', '_')}.pdf`}
+                      className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm font-semibold"
+                    >
+                      {({ loading }) => (loading ? 'Generazione PDF...' : 'Scarica PDF')}
+                    </PDFDownloadLink>
                   </div>
                 </div>
               </li>
