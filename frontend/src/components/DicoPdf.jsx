@@ -47,8 +47,16 @@ export default function DicoPdf({ dico }) {
           <Text style={{ marginBottom: 5 }}>che l'impianto è stato realizzato in modo conforme alla regola dell'arte, secondo quanto previsto dall'art. 6, tenuto conto delle condizioni di esercizio e degli usi a cui è destinato l'edificio.</Text>
 
           <View style={styles.row}>
+            <Text style={styles.label}>Tipologia Impianto:</Text>
+            <Text style={styles.value}>{dico.impianto_tipo ? dico.impianto_tipo.toUpperCase() : '---'}</Text>
+          </View>
+          <View style={styles.row}>
             <Text style={styles.label}>Tipo Intervento:</Text>
             <Text style={styles.value}>{dico.tipo_intervento.replace('_', ' ').toUpperCase()}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Norme Tecniche:</Text>
+            <Text style={styles.value}>{dico.norme_tecniche || '---'}</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>Descrizione Impianto:</Text>

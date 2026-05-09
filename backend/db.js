@@ -33,6 +33,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
       tipo_intervento TEXT NOT NULL,
       descrizione_impianto TEXT NOT NULL,
       indirizzo_impianto TEXT NOT NULL,
+      impianto_tipo TEXT NOT NULL,
+      norme_tecniche TEXT,
       allegato_progetto BOOLEAN DEFAULT 0,
       allegato_relazione_materiali BOOLEAN DEFAULT 0,
       allegato_schema_impianto BOOLEAN DEFAULT 0,

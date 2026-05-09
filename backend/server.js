@@ -67,20 +67,20 @@ app.get('/api/dicos', (req, res) => {
 
 app.post('/api/dicos', (req, res) => {
   const {
-    client_id, installer_id, tipo_intervento, descrizione_impianto, indirizzo_impianto,
+    client_id, installer_id, tipo_intervento, descrizione_impianto, indirizzo_impianto, impianto_tipo, norme_tecniche,
     allegato_progetto, allegato_relazione_materiali, allegato_schema_impianto, allegato_certificato_requisiti, relazione_materiali_testo
   } = req.body;
 
-  if (!client_id || !installer_id || !tipo_intervento || !descrizione_impianto || !indirizzo_impianto) {
+  if (!client_id || !installer_id || !tipo_intervento || !descrizione_impianto || !indirizzo_impianto || !impianto_tipo) {
     return res.status(400).json({ error: "All mandatory fields are required" });
   }
 
   db.run(`INSERT INTO dicos (
-            client_id, installer_id, tipo_intervento, descrizione_impianto, indirizzo_impianto,
+            client_id, installer_id, tipo_intervento, descrizione_impianto, indirizzo_impianto, impianto_tipo, norme_tecniche,
             allegato_progetto, allegato_relazione_materiali, allegato_schema_impianto, allegato_certificato_requisiti, relazione_materiali_testo
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      client_id, installer_id, tipo_intervento, descrizione_impianto, indirizzo_impianto,
+      client_id, installer_id, tipo_intervento, descrizione_impianto, indirizzo_impianto, impianto_tipo, norme_tecniche || '',
       allegato_progetto ? 1 : 0,
       allegato_relazione_materiali ? 1 : 0,
       allegato_schema_impianto ? 1 : 0,
@@ -88,7 +88,7 @@ app.post('/api/dicos', (req, res) => {
       relazione_materiali_testo || ''
     ], function(err) {
     if (err) return res.status(500).json({ error: err.message });
-    res.json({ id: this.lastID, client_id, installer_id, tipo_intervento, descrizione_impianto, indirizzo_impianto });
+    res.json({ id: this.lastID, client_id, installer_id, tipo_intervento, descrizione_impianto, indirizzo_impianto, impianto_tipo });
   });
 });
 
@@ -123,10 +123,21 @@ const sessions = {};
 const DICO_QUESTIONS = [
   { key: 'client_id', type: 'select', text: 'Per favore, indicami l\'ID del Cliente (es. "1").' },
   { key: 'installer_id', type: 'select', text: 'Perfetto. Ora indicami l\'ID dell\'Installatore (es. "1").' },
+  { key: 'impianto_tipo', type: 'select', text: 'Che tipo di impianto è? Scegli tra: elettrico, radiotelevisivo, riscaldamento, idrico, gas, sollevamento, antincendio.' },
   { key: 'tipo_intervento', type: 'text', text: 'Qual è il tipo di intervento? (nuovo_impianto, trasformazione, ampliamento, manutenzione_straordinaria)' },
   { key: 'descrizione_impianto', type: 'text', text: 'Fornisci una breve descrizione dell\'impianto.' },
   { key: 'indirizzo_impianto', type: 'text', text: 'Infine, qual è l\'indirizzo dell\'impianto?' }
 ];
+
+const NORME_PREDEFINITE = {
+  'elettrico': 'CEI 64-8',
+  'radiotelevisivo': 'CEI 100-7',
+  'riscaldamento': 'UNI 10683, UNI EN 12828',
+  'idrico': 'UNI EN 806',
+  'gas': 'UNI 7129, UNI 11137',
+  'sollevamento': 'UNI EN 81',
+  'antincendio': 'UNI 9795'
+};
 
 app.post('/api/chat', (req, res) => {
   const { session_id, message } = req.body;
@@ -172,12 +183,16 @@ app.post('/api/chat', (req, res) => {
   if (state.step <= DICO_QUESTIONS.length) {
     return res.json({ reply: DICO_QUESTIONS[state.step - 1].text });
   } else {
-    // All data collected, save to DB
-    const { client_id, installer_id, tipo_intervento, descrizione_impianto, indirizzo_impianto } = state.data;
+    // Determine default norms based on chosen type
+    const tipo = state.data['impianto_tipo'].toLowerCase();
+    const norme_tecniche = NORME_PREDEFINITE[tipo] || 'Norme UNI/CEI vigenti';
 
-    db.run(`INSERT INTO dicos (client_id, installer_id, tipo_intervento, descrizione_impianto, indirizzo_impianto)
-            VALUES (?, ?, ?, ?, ?)`,
-      [client_id, installer_id, tipo_intervento, descrizione_impianto, indirizzo_impianto], function(err) {
+    // All data collected, save to DB
+    const { client_id, installer_id, impianto_tipo, tipo_intervento, descrizione_impianto, indirizzo_impianto } = state.data;
+
+    db.run(`INSERT INTO dicos (client_id, installer_id, impianto_tipo, norme_tecniche, tipo_intervento, descrizione_impianto, indirizzo_impianto)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [client_id, installer_id, impianto_tipo, norme_tecniche, tipo_intervento, descrizione_impianto, indirizzo_impianto], function(err) {
 
       delete sessions[session_id]; // Reset session
 

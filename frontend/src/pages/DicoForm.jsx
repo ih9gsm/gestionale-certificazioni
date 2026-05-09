@@ -8,6 +8,8 @@ export default function DicoForm() {
   const [formData, setFormData] = useState({
     client_id: '',
     installer_id: '',
+    impianto_tipo: 'elettrico',
+    norme_tecniche: 'CEI 64-8',
     tipo_intervento: 'nuovo_impianto',
     descrizione_impianto: '',
     indirizzo_impianto: '',
@@ -17,6 +19,16 @@ export default function DicoForm() {
     allegato_certificato_requisiti: false,
     relazione_materiali_testo: ''
   });
+
+  const NORME_PREDEFINITE = {
+    'elettrico': 'CEI 64-8',
+    'radiotelevisivo': 'CEI 100-7',
+    'riscaldamento': 'UNI 10683, UNI EN 12828',
+    'idrico': 'UNI EN 806',
+    'gas': 'UNI 7129, UNI 11137',
+    'sollevamento': 'UNI EN 81',
+    'antincendio': 'UNI 9795'
+  };
 
   const navigate = useNavigate();
 
@@ -38,7 +50,15 @@ export default function DicoForm() {
 
   const handleChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-    setFormData({ ...formData, [e.target.name]: value });
+    const name = e.target.name;
+
+    setFormData(prev => {
+      const nextData = { ...prev, [name]: value };
+      if (name === 'impianto_tipo') {
+        nextData.norme_tecniche = NORME_PREDEFINITE[value] || '';
+      }
+      return nextData;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -76,6 +96,19 @@ export default function DicoForm() {
           </div>
 
           <div>
+            <label className="block font-semibold mb-1">Tipologia Impianto (DM 37/08)</label>
+            <select name="impianto_tipo" value={formData.impianto_tipo} onChange={handleChange} className="w-full border p-2 rounded" required>
+              <option value="elettrico">Lettera A - Impianto Elettrico</option>
+              <option value="radiotelevisivo">Lettera B - Impianto Radiotelevisivo / Elettronico</option>
+              <option value="riscaldamento">Lettera C - Impianto di Riscaldamento / Climatizzazione</option>
+              <option value="idrico">Lettera D - Impianto Idrico / Sanitario</option>
+              <option value="gas">Lettera E - Impianto a Gas</option>
+              <option value="sollevamento">Lettera F - Impianti di Sollevamento</option>
+              <option value="antincendio">Lettera G - Impianto Antincendio</option>
+            </select>
+          </div>
+
+          <div>
             <label className="block font-semibold mb-1">Tipo di Intervento</label>
             <select name="tipo_intervento" value={formData.tipo_intervento} onChange={handleChange} className="w-full border p-2 rounded" required>
               <option value="nuovo_impianto">Nuovo Impianto</option>
@@ -83,6 +116,11 @@ export default function DicoForm() {
               <option value="ampliamento">Ampliamento</option>
               <option value="manutenzione_straordinaria">Manutenzione Straordinaria</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block font-semibold mb-1">Norme Tecniche Applicate</label>
+            <textarea name="norme_tecniche" value={formData.norme_tecniche} onChange={handleChange} className="w-full border p-2 rounded text-sm text-gray-700 bg-gray-50" rows="2" required></textarea>
           </div>
 
           <div>
