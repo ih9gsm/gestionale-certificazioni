@@ -82,6 +82,23 @@ const db = new sqlite3.Database(dbPath, (err) => {
     )`, (err) => {
       if (err) console.error("Error creating diris table", err);
     });
+
+    db.run(`CREATE TABLE IF NOT EXISTS libretti (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      client_id INTEGER,
+      installer_id INTEGER,
+      tipo_impianto TEXT NOT NULL,
+      indirizzo_impianto TEXT NOT NULL,
+      tipo_generatore TEXT,
+      matricola_generatore TEXT,
+      potenza_termica TEXT,
+      data_compilazione TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (client_id) REFERENCES clients(id),
+      FOREIGN KEY (installer_id) REFERENCES installers(id)
+    )`, (err) => {
+      if (err) console.error("Error creating libretti table", err);
+    });
   }
 });
 

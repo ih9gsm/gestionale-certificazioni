@@ -143,6 +143,37 @@ app.post('/api/diris', (req, res) => {
   });
 });
 
+// --- Libretti API (DPR 74/2013) ---
+
+app.get('/api/libretti', (req, res) => {
+  const query = `
+    SELECT l.*, c.name as client_name, i.company_name as installer_company, i.responsible_person as installer_resp
+    FROM libretti l
+    LEFT JOIN clients c ON l.client_id = c.id
+    LEFT JOIN installers i ON l.installer_id = i.id
+    ORDER BY l.created_at DESC
+  `;
+  db.all(query, [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
+app.post('/api/libretti', (req, res) => {
+  const { client_id, installer_id, tipo_impianto, indirizzo_impianto, tipo_generatore, matricola_generatore, potenza_termica, data_compilazione } = req.body;
+
+  if (!client_id || !installer_id || !tipo_impianto || !indirizzo_impianto || !data_compilazione) {
+    return res.status(400).json({ error: "Mandatory fields missing for Libretto" });
+  }
+
+  db.run(`INSERT INTO libretti (client_id, installer_id, tipo_impianto, indirizzo_impianto, tipo_generatore, matricola_generatore, potenza_termica, data_compilazione)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [client_id, installer_id, tipo_impianto, indirizzo_impianto, tipo_generatore || '', matricola_generatore || '', potenza_termica || '', data_compilazione], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ id: this.lastID, client_id, installer_id, tipo_impianto, indirizzo_impianto });
+  });
+});
+
 // --- Settings API ---
 
 app.get('/api/settings', (req, res) => {
