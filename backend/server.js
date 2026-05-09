@@ -142,11 +142,17 @@ app.post('/api/chat', (req, res) => {
   const state = sessions[session_id];
 
   if (state.step === 0) {
-    if (message.toLowerCase() === 'si' || message.toLowerCase() === 'sì') {
+    const lowerMessage = message.toLowerCase();
+    const startKeywords = ['si', 'sì', 'crea', 'voglio', 'inizia', 'ok', 'dico', 'certificazione', 'impianto'];
+
+    // Check if the message contains any of the start keywords
+    const shouldStart = startKeywords.some(kw => lowerMessage.includes(kw));
+
+    if (shouldStart) {
       state.step = 1;
       return res.json({ reply: DICO_QUESTIONS[0].text });
     } else {
-      return res.json({ reply: "D'accordo, fammi sapere se hai bisogno di me in futuro." });
+      return res.json({ reply: "Non sono sicuro di aver capito. Se vuoi creare una nuova Dichiarazione di Conformità, rispondi 'sì' oppure scrivi 'crea DICO'." });
     }
   }
 

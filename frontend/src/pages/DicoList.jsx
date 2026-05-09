@@ -49,7 +49,7 @@ export default function DicoList() {
                     </div>
                     <PDFDownloadLink
                       document={<DicoPdf dico={dico} />}
-                      fileName={`DICO_${dico.id}_${dico.client_name.replace(' ', '_')}.pdf`}
+                      fileName={`DICO_${dico.id}_${(dico.client_name || 'Sconosciuto').replace(' ', '_')}.pdf`}
                       className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm font-semibold"
                     >
                       {({ loading }) => (loading ? 'Generazione PDF...' : 'Scarica PDF')}
