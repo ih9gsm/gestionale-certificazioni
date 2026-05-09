@@ -44,6 +44,18 @@ const db = new sqlite3.Database(dbPath, (err) => {
     )`, (err) => {
       if (err) console.error("Error creating dicos table", err);
     });
+
+    db.run(`CREATE TABLE IF NOT EXISTS settings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      setting_key TEXT UNIQUE NOT NULL,
+      setting_value TEXT NOT NULL
+    )`, (err) => {
+      if (err) {
+        console.error("Error creating settings table", err);
+      } else {
+        db.run(`INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('ai_agent_enabled', 'true')`);
+      }
+    });
   }
 });
 
