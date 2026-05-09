@@ -58,6 +58,30 @@ const db = new sqlite3.Database(dbPath, (err) => {
         db.run(`INSERT OR IGNORE INTO settings (setting_key, setting_value) VALUES ('ai_agent_enabled', 'true')`);
       }
     });
+
+    db.run(`CREATE TABLE IF NOT EXISTS materials (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code TEXT,
+      name TEXT NOT NULL,
+      description TEXT
+    )`, (err) => {
+      if (err) console.error("Error creating materials table", err);
+    });
+
+    db.run(`CREATE TABLE IF NOT EXISTS diris (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      client_id INTEGER,
+      installer_id INTEGER,
+      impianto_tipo TEXT NOT NULL,
+      descrizione_impianto TEXT NOT NULL,
+      indirizzo_impianto TEXT NOT NULL,
+      anno_realizzazione TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (client_id) REFERENCES clients(id),
+      FOREIGN KEY (installer_id) REFERENCES installers(id)
+    )`, (err) => {
+      if (err) console.error("Error creating diris table", err);
+    });
   }
 });
 

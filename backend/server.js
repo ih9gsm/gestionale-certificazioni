@@ -93,6 +93,56 @@ app.post('/api/dicos', (req, res) => {
 });
 
 
+// --- Materials API ---
+
+app.get('/api/materials', (req, res) => {
+  db.all('SELECT * FROM materials ORDER BY name ASC', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
+app.post('/api/materials', (req, res) => {
+  const { code, name, description } = req.body;
+  if (!name) return res.status(400).json({ error: "Name is required" });
+
+  db.run('INSERT INTO materials (code, name, description) VALUES (?, ?, ?)', [code || '', name, description || ''], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ id: this.lastID, code, name, description });
+  });
+});
+
+// --- DIRI API ---
+
+app.get('/api/diris', (req, res) => {
+  const query = `
+    SELECT d.*, c.name as client_name, i.company_name as installer_company, i.responsible_person as installer_resp
+    FROM diris d
+    LEFT JOIN clients c ON d.client_id = c.id
+    LEFT JOIN installers i ON d.installer_id = i.id
+    ORDER BY d.created_at DESC
+  `;
+  db.all(query, [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
+app.post('/api/diris', (req, res) => {
+  const { client_id, installer_id, impianto_tipo, descrizione_impianto, indirizzo_impianto, anno_realizzazione } = req.body;
+
+  if (!client_id || !installer_id || !impianto_tipo || !descrizione_impianto || !indirizzo_impianto) {
+    return res.status(400).json({ error: "All mandatory fields are required" });
+  }
+
+  db.run(`INSERT INTO diris (client_id, installer_id, impianto_tipo, descrizione_impianto, indirizzo_impianto, anno_realizzazione)
+          VALUES (?, ?, ?, ?, ?, ?)`,
+    [client_id, installer_id, impianto_tipo, descrizione_impianto, indirizzo_impianto, anno_realizzazione || ''], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ id: this.lastID, client_id, installer_id, impianto_tipo, descrizione_impianto, indirizzo_impianto, anno_realizzazione });
+  });
+});
+
 // --- Settings API ---
 
 app.get('/api/settings', (req, res) => {

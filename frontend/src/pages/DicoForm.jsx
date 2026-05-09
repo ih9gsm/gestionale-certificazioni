@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 export default function DicoForm() {
   const [clients, setClients] = useState([]);
   const [installers, setInstallers] = useState([]);
+  const [materialsList, setMaterialsList] = useState([]);
   const [formData, setFormData] = useState({
     client_id: '',
     installer_id: '',
@@ -35,12 +36,14 @@ export default function DicoForm() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [clientsRes, installersRes] = await Promise.all([
+        const [clientsRes, installersRes, materialsRes] = await Promise.all([
           axios.get('http://localhost:3000/api/clients'),
-          axios.get('http://localhost:3000/api/installers')
+          axios.get('http://localhost:3000/api/installers'),
+          axios.get('http://localhost:3000/api/materials')
         ]);
         setClients(clientsRes.data);
         setInstallers(installersRes.data);
+        setMaterialsList(materialsRes.data);
       } catch (err) {
         console.error(err);
       }
@@ -146,14 +149,38 @@ export default function DicoForm() {
               </label>
 
               {formData.allegato_relazione_materiali && (
-                <textarea
-                  name="relazione_materiali_testo"
-                  value={formData.relazione_materiali_testo}
-                  onChange={handleChange}
-                  className="w-full border p-2 rounded ml-6 mt-1"
-                  rows="3"
-                  placeholder="Elenco materiali: Tubazioni Rame, Cavi FG16, etc..."
-                />
+                <div className="ml-6 mt-1">
+                  {materialsList.length > 0 && (
+                    <div className="mb-2">
+                      <p className="text-sm font-semibold mb-1">Aggiungi materiale da anagrafica:</p>
+                      <select
+                        className="border p-1 rounded text-sm"
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            const newText = formData.relazione_materiali_testo
+                              ? formData.relazione_materiali_testo + '\n- ' + e.target.value
+                              : '- ' + e.target.value;
+                            setFormData({ ...formData, relazione_materiali_testo: newText });
+                            e.target.value = "";
+                          }
+                        }}
+                      >
+                        <option value="">-- Seleziona --</option>
+                        {materialsList.map(m => (
+                          <option key={m.id} value={`${m.name} ${m.code ? `(${m.code})` : ''}`}>{m.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  <textarea
+                    name="relazione_materiali_testo"
+                    value={formData.relazione_materiali_testo}
+                    onChange={handleChange}
+                    className="w-full border p-2 rounded"
+                    rows="4"
+                    placeholder="Elenco materiali: Tubazioni Rame, Cavi FG16, etc..."
+                  />
+                </div>
               )}
 
               <label className="flex items-center gap-2">
